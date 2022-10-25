@@ -7,6 +7,7 @@
 #include <Runtime/Engine/Classes/GameFramework/SpringArmComponent.h>
 #include <Runtime/Engine/Classes/Camera/CameraComponent.h>
 #include "GameFramework/CharacterMovementComponent.h"
+#include "SInteractComponent.h" //引入ActorComponent，这个东西就是一个组件了，需要U
 #include "SCharacter.generated.h"
 
 UCLASS()
@@ -23,17 +24,21 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(VisibleAnywhere)
-	USpringArmComponent* SpringArmComp;
+	USpringArmComponent* SpringArmComp = nullptr;
 
 	UPROPERTY(VisibleAnywhere)
-	UCameraComponent* CameraComp;
+	UCameraComponent* CameraComp = nullptr;
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<AActor> ProjectileClass;
+	TSubclassOf<AActor> ProjectileClass = nullptr;
+
+	UPROPERTY(VisibleAnywhere)
+	USInteractComponent* InteractionComp = nullptr;
 
 	void MoveForward(float value);
 	void MoveRight(float value);
 	void PrimaryAttack();
+	void PrimaryInteraction();
 
 public:	
 	// Called every frame
