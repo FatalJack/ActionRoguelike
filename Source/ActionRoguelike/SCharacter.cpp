@@ -11,6 +11,10 @@ ASCharacter::ASCharacter()
 
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>("SpringArmComp");//创建默认目标，括号是名字。弹簧臂组件，可以用来绑定第三人称摄像头
 	SpringArmComp->SetupAttachment(RootComponent);//建立一个连接
+	SpringArmComp->bUsePawnControlRotation = true;//弹簧臂可以随着视角转动
+	bUseControllerRotationYaw = false;//人物静止时不跟着视角一起旋转
+
+	GetCharacterMovement()->bOrientRotationToMovement = true;//让人物移动时的方向随着视角方向旋转（模型）
 
 	CameraComp = CreateDefaultSubobject<UCameraComponent>("CameraComp");
 	CameraComp->SetupAttachment(SpringArmComp);//相机连在杆子上
@@ -25,7 +29,32 @@ void ASCharacter::BeginPlay()
 
 void ASCharacter::MoveForward(float value)
 {
-	AddMovementInput(GetActorForwardVector(), value);
+	//AddMovementInput(GetActorForwardVector(), value); //只是向前走
+	FRotator ControllRot = GetControlRotation();
+	ControllRot.Pitch = .0f;
+	ControllRot.Roll = .0f;
+	AddMovementInput(ControllRot.Vector(), value);//模型朝向可以跟随视角进行方向调整
+}
+
+void ASCharacter::MoveRight(float value)
+{
+	//AddMovementInput(GetActorRightVector(), value);//向量方向一直变，所以会一直转
+	//正确的应该是按照视角方向走
+	FRotator ControllRot = GetControlRotation();
+	ControllRot.Pitch = .0f;
+	ControllRot.Roll = .0f;
+	FVector RightVector = FRotationMatrix(ControllRot).GetScaledAxis(EAxis::Y);
+	AddMovementInput(RightVector, value);
+}
+
+void ASCharacter::PrimaryAttack()
+{
+	FVector SwordLocation = GetMesh()->GetSocketLocation("Sword_Strike");//获取骨骼网格体中相应的点的坐标
+
+	FTransform SpawnTM = FTransform(GetControlRotation(), SwordLocation);//让射出的位置处于所想的地方，这里是剑尖
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
 }
 
 // Called every frame
@@ -41,6 +70,9 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &ASCharacter::MoveForward);
-	PlayerInputComponent->BindAxis("Turn", this, &ASCharacter::AddControllerYawInput);
+	PlayerInputComponent->BindAxis("MoveRight", this, &ASCharacter::MoveRight);
+	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
+	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+	PlayerInputComponent->BindAction("PrimaryAttack", IE_Pressed, this, &ASCharacter::PrimaryAttack);
 }
 

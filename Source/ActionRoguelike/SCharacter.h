@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include <Runtime/Engine/Classes/GameFramework/SpringArmComponent.h>
 #include <Runtime/Engine/Classes/Camera/CameraComponent.h>
+#include "GameFramework/CharacterMovementComponent.h"
 #include "SCharacter.generated.h"
 
 UCLASS()
@@ -27,7 +28,12 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* CameraComp;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AActor> ProjectileClass;
+
 	void MoveForward(float value);
+	void MoveRight(float value);
+	void PrimaryAttack();
 
 public:	
 	// Called every frame
