@@ -92,6 +92,7 @@ void ASCharacter::PrimaryAttack_TimeElapsed()
 	FTransform SpawnTM = FTransform(GetControlRotation(), SwordLocation);//让射出的位置处于所想的地方，这里是剑尖
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.Instigator = this;//释放者
 	GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
 }
 
