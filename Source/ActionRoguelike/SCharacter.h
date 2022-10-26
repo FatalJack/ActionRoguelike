@@ -23,13 +23,16 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UPROPERTY(EditAnywhere, Category = "Attack")//类别让代码更清晰
+	UAnimMontage* AttackAnim;
+
 	UPROPERTY(VisibleAnywhere)
 	USpringArmComponent* SpringArmComp = nullptr;
 
 	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* CameraComp = nullptr;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Attack")
 	TSubclassOf<AActor> ProjectileClass = nullptr;
 
 	UPROPERTY(VisibleAnywhere)
@@ -39,6 +42,9 @@ protected:
 	void MoveRight(float value);
 	void PrimaryAttack();
 	void PrimaryInteraction();
+
+	FTimerHandle TimeHandle_PrimaryAttack; //计时器相关
+	void PrimaryAttack_TimeElapsed();//计时结束后事件
 
 public:	
 	// Called every frame

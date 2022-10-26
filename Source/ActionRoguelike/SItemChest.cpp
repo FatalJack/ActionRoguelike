@@ -35,6 +35,6 @@ void ASItemChest::Tick(float DeltaTime)
 void ASItemChest::Interact_Implementation(APawn* InstigatorPawn)
 {
 	FVector CurrentLocation = LidMesh->GetComponentLocation();
-	LidMesh->SetRelativeRotation(FRotator(50.0f, 60.0f, 90.0f));
+	LidMesh->SetRelativeLocation(FMath::Lerp(CurrentLocation, CurrentLocation + FVector(.0f, .0f, 100.0f), 0.01f));
 }
 

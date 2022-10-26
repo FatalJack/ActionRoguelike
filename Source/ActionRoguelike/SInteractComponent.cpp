@@ -21,7 +21,6 @@ void USInteractComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
-	
 }
 
 
@@ -31,25 +30,45 @@ void USInteractComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
+	
 }
 
 void USInteractComponent::PrimaryInteract()
 {
-	FHitResult Hit;
+	
+	//FHitResult Hit;
 	FVector Start;
 	FRotator StartRot;
 	GetOwner()->GetActorEyesViewPoint(Start, StartRot);
-	FVector End = Start + (StartRot.Vector() * 10.0f);
+	FVector End = Start + (StartRot.Vector() * 200);
 	FCollisionObjectQueryParams ObjectQueryParams;
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
-	GetWorld()->LineTraceSingleByObjectType(Hit, Start, End, ObjectQueryParams);
+	
+	//bool bBlockingHit = GetWorld()->LineTraceSingleByObjectType(Hit, Start, End, ObjectQueryParams); //方法1，单个物体但是不好用
+		
+	TArray<FHitResult> Hits;
+	FCollisionShape Shape;
+	float r = 30.0f;
+	Shape.SetSphere(r);
 
-	AActor* HitActor =  Hit.GetActor();
-	if (HitActor) {
-		if (HitActor->Implements<USGamePlayInterface>()) {
-			APawn* MyPawn = Cast<APawn>(GetOwner());//这个cast就是一个投射，安全的，把Actor变成Pawn
-			ISGamePlayInterface::Execute_Interact(HitActor, MyPawn);//接口执行者execute，被交互的物体就是接受者implement
+	bool bBlockingHit = GetWorld()->SweepMultiByObjectType(Hits, Start, End, FQuat::Identity, ObjectQueryParams, Shape);//方法2，扫描多个物体
+
+	FColor LineColor = bBlockingHit ? FColor::Green : FColor::Red; //条件判断
+
+	for (auto Hit : Hits) {
+		AActor* HitActor = Hit.GetActor();
+		if (HitActor) {	
+			if (HitActor->Implements<USGamePlayInterface>()) {
+				APawn* MyPawn = Cast<APawn>(GetOwner());//这个cast就是一个投射，安全的，把Actor变成Pawn
+				ISGamePlayInterface::Execute_Interact(HitActor, MyPawn);//接口执行者execute，被交互的物体就是接受者implement
+				break;//确保不会一键多交互
+			}
 		}
-	}
+		
+		DrawDebugSphere(GetWorld(), Hit.ImpactPoint, r, 32, LineColor, false, 2.0f);
+		
+	}	
+	DrawDebugLine(GetWorld(), Start, End, LineColor, false, 2.0f, .0f, 10.0f);
+	
 }
 
